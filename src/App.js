@@ -1,78 +1,137 @@
-import React from 'react'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
-import './App.css'
+import axios from 'axios'
+import { useEffect } from 'react'
+import { useReducer } from 'react'
 
-import Page from './components/router-playground/page'
-import PageSharedLayout from './components/router-playground/layout'
-import Page1 from './components/router-playground/page1'
-import Page2 from './components/router-playground/page2'
-import Page3 from './components/router-playground/page3'
-import UseMemoPlayground from './components/usememo-playground'
-import UseRefPlayground from './components/useRef-playground'
-import UseRefUnmount from './components/useRef-playground/unmount-err'
-import TicTacToe from './components/tic-tac-toe-class-collaboration'
-import CarList from './components/router-playground/cars'
-import CarDetails from './components/router-playground/cars/details'
-import ApiCallPlayground from './components/api-call-playground'
-import MovieDetails from './components/movie-details'
-
-// import Homework from './homework'
-
-function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                backgroundColor: 'darkblue',
-                height: '100vh',
-                fontWeight: 'bold',
-                color: 'white',
-              }}
-            >
-              <span>Hey Guys!</span>
-              <span>Welcome!</span>
-              <br />
-              <span>How did you like the API?</span>
-            </div>
+const reduceUsers = (currState, action) => {
+  switch (action.type) {
+    case 'initial_fetch':
+      return action.payload
+    case 'update_emp_info':
+      return currState.map((user) => {
+        if (user.id === action.payload.userId) {
+          return {
+            ...user,
+            employment: {
+              ...user.employment,
+              title: action.payload.newTitle,
+            },
           }
-        />
-        <Route path="api-call" element={<ApiCallPlayground />} />
-        <Route path="usememo" element={<UseMemoPlayground />} />
-        <Route path="useref" element={<UseRefPlayground />} />
-        <Route path="useref-unmount" element={<UseRefUnmount />} />
-        <Route path="ttt" element={<TicTacToe />} />
-        <Route path="/pages" element={<PageSharedLayout />}>
-          <Route index element={<Page3 />} />
-          <Route path="new" element={<Page2 />} />
-          <Route path=":pageId" element={<Page />} />
-        </Route>
-        <Route path="/cars">
-          <Route index element={<CarList />} />
-          <Route path=":carId" element={<CarDetails />} />
-        </Route>
-        <Route path="/movie-details" element={<MovieDetails />} />
-        {/* <Route path="/homework" element={<Homework />} /> */}
-        <Route path="*" element={<Page1 />} />
-        
-        {/* <Route path="/page1" element={<Page1 />} />
-        <Route path="/page2" element={<Page2 />} />
-        <Route path="/page3" element={<Page3 />} />
+        } else {
+          return user
+        }
+      })
+    case 'change_subs':
+      return currState.map((user) => {
+        if (
+          user.firstName === action.payload.userInfo.firstName &&
+          user.lastName === action.payload.userInfo.lastName
+        ) {
+          return {
+            ...user,
+            subscription: {
+              ...user.subscription,
+              plan: action.payload.newSubscriptionPlan,
+            },
+          }
+        } else {
+          return user
+        }
+      })
+    case 'new_property_citiesLivedIn':
+      return currState.map((user) => {
+        return {
+          ...user,
+          address: {
+            ...user.address,
+            citiesLivedIn: [user.address.city],
+          },
+        }
+      })
+    default:
+      return currState
+  }
+}
 
-        <Route path="/element-sample" element={<h2>h2 element</h2>} /> */}
+const App = () => {
+  // declare an useReducer state
+  const [users, updateUsers] = useReducer(reduceUsers, [])
 
-        {/* <Route path="/tic-tac-toe" element={<TicTacToe />} />
-        <Route path="/language-selector" element={<LanguageSelector />} /> */}
-      </Routes>
-    </BrowserRouter>
+  // https://random-data-api.com/api/v2/users?size=5
+  // fetch the api above and save it in useReducer with
+  useEffect(() => {
+    axios.get('https://random-data-api.com/api/v2/users?size=5').then((res) => {
+      if (res.status === 200) {
+        updateUsers({ type: 'initial_fetch', payload: res.data })
+      }
+    })
+  }, [])
+
+  return (
+    <div>
+      {/* Add a button that changes the employement info of user with id with {3rd person's id} */}
+      <button
+        onClick={() =>
+          updateUsers({
+            type: 'update_emp_info',
+            payload: { userId: users[0]?.id, newTitle: 'Developer' },
+          })
+        }
+      >
+        Update 3rd user's employement info
+      </button>
+      {/* Add a button that changes the subscription plan of user whose firstName and lastName are the names of the 4th person */}
+      <button
+        onClick={() => {
+          updateUsers({
+            type: 'change_subs',
+            payload: {
+              userInfo: {
+                firstName: users[0]?.firstName,
+                lastName: users[0]?.lastName,
+              },
+              newSubscriptionPlan: 'Silver Plan',
+            },
+          })
+        }}
+      >
+        Update Subscription Plan
+      </button>
+      {/* Add a button that adds a citiesLivedIn property, and add the current address's city as the first city  */}
+      <button
+        onClick={() => {
+          updateUsers({
+            type: 'new_property_citiesLivedIn',
+            payload: {},
+          })
+        }}
+      >
+        Add citiesLivedIn prop
+      </button>
+      {/* DO NOT find the users with their indices, pass the identifier data via payload */}
+      {/* -------------------- */}
+      {/* FOR LATER PRACTICE: */}
+      {/* Add a button that sorts the users by their first name in ascending order A-Z  */}
+      {/* -------------------- */}
+      {/* Add a button that finds/filters all the genders. Make sure to remove the duplicates. New array should only contain the genders, not whole date of user. Ex: ['Genderfluid', 'Polygender'] */}
+      {/* -------------------- */}
+      {/* Add a button that sorts the users by their first name in ascending order A-Z  */}
+      {/* -------------------- */}
+      {/* Add a button that adds a new property called age, and its value should be the difference between year of date_of_birth and 2023 */}
+      {/* -------------------- */}
+      {/* Add a button that finds all the users who have "Student" subscription plan. */}
+      {/* -------------------- */}
+      {/* Add a button that finds all the users whose firstName starts with vowel. */}
+      {/* -------------------- */}
+      {/* Add a button that finds all the users who were born before 1970. */}
+      {/* -------------------- */}
+      {/* Add a button that finds all the users whose employment title consists of 2 words. */}
+      {/* -------------------- */}
+      {/* Add a button that finds all the users whose first name length is less than 5 */}
+      <pre>{JSON.stringify(users, null, 2)}</pre>
+    </div>
   )
 }
+
+// reducer function of the useReducer
 
 export default App

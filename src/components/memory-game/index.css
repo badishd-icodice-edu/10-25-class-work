@@ -1,0 +1,60 @@
+.deck {
+  width: 90vw;
+  margin: 10px;
+  padding: 10px;
+  border: 1px solid black;
+  border-radius: 10px;
+}
+.deck-cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: space-between;
+}
+.players {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid black;
+}
+.active-turn {
+  background-color: aquamarine;
+  padding: 3px;
+  border-radius: 5px;
+}
+.card {
+  width: 24%;
+  background-color: #00000050;
+  color: white;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 0;
+  height: min-content;
+  cursor: pointer;
+  margin-bottom: 5px;
+}
+.card.flipped {
+  background-color: darkkhaki;
+}
+.card.matched {
+  background-color:coral;
+  color: white;
+}
+.footer {
+  border-top: 1px solid black;
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+}
+.footer button {
+  height: 30px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  background-color: lightseagreen;
+  border: 1px solid black;
+  color: white;
+}
